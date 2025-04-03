@@ -6,7 +6,10 @@ import (
 
 func main() {
 	router := gin.Default()
-	router.GET("/ping", func(c *gin.Context) {
+
+	router.Static("/web", "web")
+
+	router.GET("/api/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"code": 0,
 			"msg":  "pong",
