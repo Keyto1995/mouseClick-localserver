@@ -12,7 +12,8 @@ import (
 func main() {
 	router := gin.Default()
 
-	router.Static("/web", "web")
+	router.StaticFile("/", "./web/index.html")
+	router.Static("/assets", "./web/assets")
 
 	router.GET("/api/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
