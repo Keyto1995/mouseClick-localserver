@@ -1,7 +1,10 @@
 package main
 
 import (
+	"embed"
 	"fmt"
+	"io/fs"
+	"net/http"
 	"strconv"
 	"time"
 
@@ -9,11 +12,28 @@ import (
 	"github.com/go-vgo/robotgo"
 )
 
+//go:embed static/*
+var f embed.FS
+
 func main() {
+
+	PORT := 8080
+	ipStr := getIp()
+	fmt.Println("IPv4:", ipStr)
+	url := fmt.Sprintf("http://%s:%d/index.html", ipStr,PORT)
+	if err := printQRCode(url); err != nil {
+		fmt.Println("QR Error:", err)
+	}
+
 	router := gin.Default()
 
-	router.StaticFile("/", "./web/index.html")
-	router.Static("/assets", "./web/assets")
+	router.GET("/index.html", func(c *gin.Context) {
+		file,_ := f.ReadFile("static/index.html")
+		c.Data(200, "text/html",file)
+	})
+
+	fileAssets, _ := fs.Sub(f, "static/assets")
+	router.StaticFS("/assets", http.FS(fileAssets))
 
 	router.GET("/api/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -87,5 +107,5 @@ func main() {
 		})
 	})
 
-	router.Run()
+	router.Run(fmt.Sprintf(":%d", PORT))
 }
